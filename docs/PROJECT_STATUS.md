@@ -5,7 +5,7 @@ Handoff note written after the November 2026 cleanup. Read this first when you c
 ## TL;DR
 
 - `main` = `origin/main` at `483fcdd`: **v0.4.3 source** (hardening + UI reconciliation, PR #51) plus the GPL-3.0 license. The latest *published* release is still **v0.4.2** (GitHub release `v0.4.2-release`, 2026-04-07). v0.4.3 was never released.
-- **CI on `main` is red.** The 2026-09-15 run failed because the `cryptography==46.0.7` pip-audit exceptions in `docs/security/vulnerability-exceptions.json` expired (the Torch one expired 2026-09-01). Fix: bump the dependency or renew the exceptions.
+- **CI was red from 2026-09-15 to 2026-11-05** because the pip-audit exceptions expired. Fixed on 2026-11-05: patched dependencies were upgraded. The remaining torch-coupled exceptions (torch, setuptools, filelock) expire **2027-02-05**, and clearing them needs a quality-gated torch/Python upgrade.
 - Everything that was uncommitted on disk now lives on **local-only** `archive/2026-11/*` branches. Don't push them: the repo is public and some contain logs, a copyrighted WAV, and server details. A git bundle of all of them is at `~/stemsplat-archive/archive-branches.bundle`.
 - The app installed in `/Applications/Stemsplat.app` is a **0.5.0 build**. That build came from uncommitted Desktop-clone work (now `archive/2026-11/desktop-iree-wip`), not from `main`.
 - None of the text-to-workflow models met the promotion gates, and none ships from `main`.
@@ -28,7 +28,7 @@ All `archive/2026-11/*` branches are local-only. "vs main" counts are commits ah
 
 | Branch | What it is | State | Verdict |
 |---|---|---|---|
-| `main` | v0.4.3 source + GPL | CI red (expired audit exceptions) | Canonical. |
+| `main` | v0.4.3 source + GPL | CI green (torch-coupled audit exceptions expire 2027-02-05) | Canonical. |
 | `origin/v0.5.0` (= `origin/stemsplat-iree`, `ca51b7c`, Apr 2026) | Editor/trim timeline and waveform caching on top of 0.4.2 | Its editor/waveform functions are already in `main` via the UI rebuild | Absorbed. Safe to delete on GitHub once you're sure. |
 | `origin/codex/gauntlet-hardening-…-075057` (Jul 2026) | One commit: upload magic-byte checks, task caps, subprocess/ffprobe timeouts | All of its new functions exist in `main` | Absorbed. Safe to delete. |
 | `origin/codex/skytools-api-integration` (Jul 2026, +3/−4) | Owner-scoped `/api/internal/skytools` processing API, plus "negative" outputs (song minus guitar/drums/bass/other) | Not in `main`. Small: ~430 lines in `main.py` and tests | **Salvage candidate.** Negative stems are a real user feature. Rebase onto `main`. Keep the Skytools API only if notbad.tools still needs it. |
@@ -76,7 +76,7 @@ Why nothing shipped: no candidate cleared accuracy and safety and latency at the
 
 ## Known gaps / open issues
 
-1. CI red on `main`: expired `cryptography`/Torch audit exceptions.
+1. Audit exceptions for torch 2.11 / setuptools / filelock expire 2027-02-05. Clearing them needs torch>=2.13 and/or Python 3.11+, run through the quality gates.
 2. v0.4.3 is unreleased. Every blocker in its hardening report is still open, and `quality.py` has never run on real audio.
 3. The app you actually run (0.5.0) has no committed source. It exists only as `archive/2026-11/desktop-iree-wip`.
 4. Negative stems, URL import, and the 0.5.0 optional models are absent from `main`.
@@ -86,7 +86,7 @@ Why nothing shipped: no candidate cleared accuracy and safety and latency at the
 
 ## When you come back: checklist (in priority order)
 
-1. **Get to green.** Create a fresh venv (`python3.10 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-dev-macos-arm64.lock`), then `npm ci`. Run `STEMSPLAT_DISABLE_BACKGROUND_THREADS=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`, `npm run test:e2e`, and `python tools/pip_audit_gate.py --requirements requirements-macos-arm64.lock`. Fix the expired audit exceptions so CI passes.
+1. **Get to green.** Create a fresh venv (`python3.10 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-dev-macos-arm64.lock`), then `npm ci`. Run `STEMSPLAT_DISABLE_BACKGROUND_THREADS=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`, `npm run test:e2e`, and `python tools/pip_audit_gate.py --requirements requirements-macos-arm64.lock`. Before 2027-02-05, plan the quality-gated torch/Python upgrade that clears the remaining audit exceptions.
 2. **Decide the product line.** Either (a) ship 0.4.3 by working through the release blockers, or (b) port 0.5.0 from `desktop-iree-wip` onto `main` in stages. Probably (b) first for models, because that's what you already use.
 3. **Salvage the small wins.** Rebase negative stems from `origin/codex/skytools-api-integration`. Port `url_import.py` and its tests from `ui-ux-rebuild-wip`.
 4. **Run `quality.py` once for real** (`quality/README.md`) to get a v0.4.2 baseline on this Mac. Every later perf or model change needs it (see `AGENTS.md`).
