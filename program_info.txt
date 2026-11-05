@@ -4,10 +4,11 @@ stemsplat v0.4.3 developer notes
 - Supported runtime: Apple Silicon macOS, Python 3.10-3.13, MPS.
 - Desktop listener: http://127.0.0.1:9876 (or a local fallback port).
 - LAN listener: disabled by default; explicitly enabled HTTPS on port 9877.
-- The LAN CA is exported only from the desktop API after a passcode is set.
+- The LAN CA is exported only to the host Mac (GET /api/lan/ca) after LAN access has been enabled, which requires a passcode.
 - Uploads are validated and staged under UUID names before a task is created.
-- SQLite under Application Support is authoritative for settings, tasks, queue, and history.
+- SQLite (~/Library/Application Support/stemsplat/state.sqlite3, or $STEMSPLAT_HOME) is authoritative for settings, tasks, queue, and history.
 - Models are governed by models/manifest.json. Automatic download is fail-closed until immutable hashes and licenses are recorded.
-- `scripts/stemsplat-launch` launches the desktop app; `install.py` is a compatibility installer.
+- `scripts/stemsplat-launch` launches the desktop app (prefers ./venv/bin/python); `install.py` is a compatibility installer (UI on localhost:6060, installs requirements-macos-arm64.lock into ./venv).
 - `quality.py` supplies the reference-safe baseline, compare, benchmark, and report commands.
-- Production builds require the release gate, Developer ID signing, notarization, signed update metadata, licensed model hashes, and passing quality evidence.
+- `build_app.sh` makes an ad-hoc development build by default; STEMSPLAT_RELEASE_MODE=production builds require the release gate, Developer ID signing, notarization, signed update metadata, licensed model hashes, and passing quality evidence.
+- Tests: `python -m unittest discover -s tests -p 'test_*.py'` (CI sets STEMSPLAT_DISABLE_BACKGROUND_THREADS=1); frontend: `npm run lint`, `npm run test:e2e`.

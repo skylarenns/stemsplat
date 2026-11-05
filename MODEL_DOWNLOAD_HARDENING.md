@@ -2,14 +2,16 @@
 
 This project now defends against these 25 model download failure scenarios:
 
+> **v0.4.3 status:** download entries are generated only from `models/manifest.json`. Every model in the current manifest has `auto_download: false` (no immutable URL, revision, byte length, SHA-256, or license yet), so `download_to` refuses each one with a non-retryable `unlicensed-model` error before any network access. The safeguards below apply once a manifest entry is approved.
+
 1. Download entry is missing a required field.
 2. Download URL is not HTTPS.
 3. Filename contains invalid path components.
 4. Subdirectory contains invalid path components.
 5. Destination path escapes the app directory.
 6. Configured `sha256` value is malformed.
-7. Selected model tags are duplicated.
-8. Selected model tags include unknown values.
+7. Selected model tags are duplicated (duplicates are collapsed).
+8. Selected model tags include unknown values (unknown tags are ignored).
 9. Destination parent path exists but is not a directory.
 10. Destination file path is a directory.
 11. Destination file path is a symlink.
@@ -28,7 +30,7 @@ This project now defends against these 25 model download failure scenarios:
 24. Final file replace fails after download.
 25. Remote fetch fails permanently or transiently and needs different retry behavior.
 
-Implemented safeguards live in [downloader.py](/Users/skylarenns/Desktop/stemsplat/downloader.py) and [main.py](/Users/skylarenns/Desktop/stemsplat/main.py):
+Implemented safeguards live in [downloader.py](downloader.py) and [main.py](main.py):
 
 - Invalid config and unsafe paths are rejected before any network or filesystem writes start.
 - Remote metadata is gathered from HEAD when possible and from GET response headers as a fallback.
@@ -37,4 +39,4 @@ Implemented safeguards live in [downloader.py](/Users/skylarenns/Desktop/stemspl
 - Disk-space and filesystem problems are surfaced with specific permanent errors.
 - Network, timeout, and server-side failures are marked retryable.
 - Missing files, permission errors, and invalid config stop immediately instead of retrying forever.
-- Retry attempts use bounded backoff and stop after a maximum retry count.
+- Retry attempts use bounded backoff (5–30 seconds) and stop after a maximum of 5 retries (`MODEL_DOWNLOAD_MAX_RETRIES`).
