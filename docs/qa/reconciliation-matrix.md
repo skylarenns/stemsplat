@@ -25,7 +25,7 @@ v0.4.3 product.
 | Partial multi-file admission | Port | Local batches are validated and staged before any task is registered. | Backend owner; batch rollback tests |
 | Audio metadata/duration/title bugs | Already implemented | v0.4.2 probes real media, retains original display names, and its expanded battery covers mono/stereo/sample-rate/duration behavior. | Closed; existing tests |
 | 24-bit output claim was false | Not applicable | v0.4.2 intentionally defaults to its existing 16-bit output semantics. v0.4.3 does not relabel or change them. | Closed |
-| Compressed decode prerequisites | Already implemented | v0.4.2 uses packaged FFmpeg/ffprobe and covers WAV, VBR MP3, and compressed decode paths. | Packaging owner; clean-install test required |
+| Compressed decode prerequisites | Already implemented | v0.4.2 packages FFmpeg via `imageio-ffmpeg` and covers WAV, VBR MP3, and compressed decode paths. Upload probing needs `ffprobe`, which is resolved from `PATH` or next to the ffmpeg binary and is not added by `build_app.sh`. | Packaging owner; clean-install test required |
 | Duplicate upload collision | Port | UUID-only storage plus NFC/casefold duplicate detection for batches. | Backend owner |
 | Path/error/header disclosure | Port | New DTO and deletion paths expose opaque IDs/display names, never absolute storage paths or internal exception text. | Security owner |
 | CPU/GPU setting reconciliation | Not applicable | Supported v0.4.3 target is Apple Silicon MPS only; unsupported Docker release definitions are removed. | Closed |
